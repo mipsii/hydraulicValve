@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="blockMessage" Id="{68346874-3d2e-4f26-bed0-402040ec1f96}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION blockMessage : BOOL
+VAR_INPUT
+	error : STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ADSLOGSTR(msgCtrlMask := ADSLOG_MSGTYPE_ERROR OR ADSLOG_MSGTYPE_LOG,
+	msgFmtStr := error,
+	strArg :='');
+blockMessage := TRUE;
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

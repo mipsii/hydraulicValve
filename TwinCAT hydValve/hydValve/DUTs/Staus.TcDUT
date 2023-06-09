@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="Staus" Id="{7e895dde-f2d4-45e5-a1e2-1bc925d3e510}">
+    <Declaration><![CDATA[TYPE Staus :
+STRUCT
+	Standstill : BOOL;	// Oba výstupy jsou na minimu
+	Accel : BOOL;	// Jeden z výstupů zrychluje
+	Decel : BOOL;	// Jeden z výstupů zpomaluje
+	OutPosDirProc : REAL;// Výstup v daném směru [%]
+	OutNegDirProc : REAL;// Výstup v daném směru [%]
+	bBussy : BOOL;// TRUE je-li FB aktivní (změna na výstupu)
+	bDone : BOOL;	// TRUE je-li výstupní hodnota je rovna žádané
+	bError : STRING; // Chyba
+	nErrorId : INT;// Kód chyby
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

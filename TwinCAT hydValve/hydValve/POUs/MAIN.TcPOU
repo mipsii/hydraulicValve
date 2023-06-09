@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{9244de9b-d391-42d4-9798-03c505ca3024}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	hydraulicValve : Valve;
+	enaNegDirB : BOOL := FALSE;
+	enaPosDirB : BOOL := FALSE;
+	commandSet : REAL := 0;
+	//konfiguraParametry : REFERENCE TO configaracionParammetrs  REF=generalVariable.conParammetr;
+	OutPosDir : REAL := 0 ;	// Výstup v daném směru [mA]
+	OutNegDir : REAL := 0 ;	// Výstup v daném směru [mA]
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+//hydraulicValve.configaracionParammetr := generalVariable.conParammetr;
+
+hydraulicValve.enableSolenoidControl(poz :=enaPosDirB, neg := enaNegDirB);
+hydraulicValve.commandCheck(commandSet);
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="decelerationValve" Id="{2143f152-bf83-446a-922b-79e1096a2873}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION decelerationValve : REAL
+VAR_INPUT
+	iCurrent : REAL;
+	iTarget : REAL;
+	iTime : REAL;
+END_VAR
+VAR
+	delta : REAL;
+	time_increment : REAL;
+	temp :real;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[delta := ABS( iCurrent) - ABS(iTarget) ;
+
+time_increment := iTime/delta ;
+ 
+temp :=iCurrent - time_increment;
+
+IF ( temp < iTarget) THEN
+	temp := iTarget;
+END_IF 
+ 
+decelerationValve :=temp ; ]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

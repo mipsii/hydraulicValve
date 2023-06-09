@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="accelerationValve" Id="{810d5aad-a310-4af2-aaff-8d1ea3cb2497}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION accelerationValve : REAL
+VAR_INPUT
+	iCurrent : REAL;
+	iTarget : REAL;
+	iTime : REAL;
+END_VAR
+VAR
+	delta : REAL;
+	time_increment : REAL;
+	temp : REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[delta := ABS( iCurrent) - ABS(iTarget) ;
+
+time_increment := iTime/delta ;
+ 
+temp :=iCurrent + time_increment;
+ IF ( temp > iTarget) THEN
+	 temp := iTarget;
+ END_IF
+ 
+ accelerationValve := temp;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

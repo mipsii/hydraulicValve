@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="generalVariable" Id="{6882d4cc-5bb3-488f-b1dc-d2f21666e613}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	conParammetr : configaracionParammetrs;
+	staus : Staus;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

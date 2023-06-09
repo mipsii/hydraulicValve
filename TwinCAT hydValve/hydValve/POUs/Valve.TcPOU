@@ -1,0 +1,395 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Valve" Id="{07fe6f2a-6d45-441b-87af-c7e504d72a69}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Valve
+VAR_INPUT
+	//configaracionParammetr : configaracionParammetrs;
+END_VAR
+VAR		
+	
+	enaNegDir : BOOL := FALSE;
+	enaPosDir : BOOL := FALSE;
+	command : REAL; // Příkaz -1000 .. 0 .. 1000 [procenta * 10]
+
+	errorDir : BOOL;
+	
+	currentCommand : REAL := 0;
+		
+	currentError : BOOL := FALSE; // test error
+	
+	//command : INT; 
+	status : REFERENCE TO Staus REF=generalVariable.staus;
+	konfiguraParametry : REFERENCE TO configaracionParammetrs  REF=generalVariable.conParammetr;
+	speedRamp : REAL;
+	
+END_VAR
+VAR_OUTPUT
+	OutPosDir : REAL := 0 ;	// Výstup v daném směru [mA]
+	OutNegDir : REAL := 0 ;	// Výstup v daném směru [mA]
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//currentDir := currentDirB(enaNegDir,enaPosDir);
+signalStandstill();
+
+IF (currentcommand <> command) THEN
+		//nTime := elapsTime(direction := currentDir);
+		currentcommand := rampValve ();
+	ELSE	
+		Accel_Decel(FALSE, FALSE);
+		status.bDone := TRUE;
+END_IF;
+]]></ST>
+    </Implementation>
+    <Folder Name="convert" Id="{300b4007-52ce-45a9-b54b-66603ed0f738}" />
+    <Folder Name="status" Id="{c3096d7a-3e5f-4ec9-98f8-fe780d20a6f1}" />
+    <Method Name="Accel_Decel" Id="{5fabbdb6-e851-4631-9979-90e5066b5d5d}" FolderPath="status\">
+      <Declaration><![CDATA[METHOD PRIVATE Accel_Decel
+VAR_INPUT
+	a : BOOL;
+	b : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[status.Accel := a;
+status.Decel := b;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="addCommand" Id="{6c3d938e-09ec-4b69-ab31-3c4b3a35ae7e}">
+      <Declaration><![CDATA[METHOD addCommand
+VAR_INPUT
+	comm : real;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[command := comm;	
+currentError := FALSE;
+errorDir := FALSE;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="commandCheck" Id="{ea8fb27c-a143-4ddf-a1d6-d37603ca1158}">
+      <Declaration><![CDATA[METHOD PUBLIC commandCheck
+VAR_INPUT
+	comm : REAL;
+END_VAR
+VAR
+	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF not(currentError) THEN
+	IF ((comm <= 100) AND (comm >0)) THEN
+			IF enaPosDir THEN
+				addCommand(comm);
+			ELSIF NOT(errorDir) THEN
+					errCode(4);
+					errorDir := TRUE;
+				END_IF
+		ELSIF ((comm >= -100) AND (comm < 0)) THEN
+				IF enaNegDir THEN
+					addCommand(comm);
+				ELSIF not(errorDir) THEN
+					errCode(3);
+					errorDir := TRUE;
+				END_IF
+				ELSIF comm = 0 THEN
+						status.Standstill := 0;
+					ELSIF NOT(errorDir) THEN
+					errCode(2);
+					errorDir := TRUE;
+				END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="convertTo" Id="{71dc1983-f851-4477-9ad3-772e0d3c40e3}" FolderPath="convert\">
+      <Declaration><![CDATA[METHOD PRIVATE convertTo : REAL
+VAR_INPUT
+	currCommand : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF enaPosDir THEN
+	convertTo := 1000*(currCommand -konfiguraParametry.CurPosDirMin)/(konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin);
+ELSE
+	convertTo := 1000*(currCommand -konfiguraParametry.CurNegDirMin)/(konfiguraParametry.CurnegDirMax - konfiguraParametry.CurNegDirMin);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="convertToAnal" Id="{ef17a997-e61a-4973-93d5-edbe7345e470}" FolderPath="convert\">
+      <Declaration><![CDATA[METHOD PROTECTED convertToAnal : REAL
+VAR_INPUT
+	pCommand : REAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF  enaPosDir THEN
+	convertToAnal:= (konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin)/1000*pCommand + konfiguraParametry.CurPosDirMin;
+ELSE
+	convertToAnal:= (konfiguraParametry.CurNegDirMax - konfiguraParametry.CurNegDirMin)/1000*pCommand + konfiguraParametry.CurNegDirMin;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="elapsTime" Id="{942fb0ec-ddb1-47fe-a405-090f8689464c}">
+      <Declaration><![CDATA[METHOD PRIVATE elapsTime : REAL
+VAR_INPUT
+	direction : BOOL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF direction THEN
+		elapsTime := (konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin)/(konfiguraParametry.RampPosDirDown -konfiguraParametry.RampPosDirUp);
+	ELSE
+		elapsTime := (konfiguraParametry.CurNegDirMax - konfiguraParametry.CurNegDirMin)/(konfiguraParametry.RampNegDirDown -konfiguraParametry.RampNegDirUp);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="enableSolenoidControl" Id="{bc641138-3214-4040-8ffb-ac7a51b96b0e}">
+      <Declaration><![CDATA[METHOD PUBLIC enableSolenoidControl
+VAR_INPUT
+	poz : BOOL;
+	neg : BOOL;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (poz AND neg) THEN
+	// error 
+	errCode(1);
+	ELSE
+	enaNegDir := neg;
+	enaPosDir := poz;
+	currentError := FALSE ;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="errCode" Id="{5db0075d-b956-4fda-a9b7-ef361dbb8a72}">
+      <Declaration><![CDATA[METHOD PRIVATE errCode
+VAR_INPUT
+	ErrorId : INT; // Kód chyby
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE ErrorId OF
+		1: messageError('muze byt aktivní pouze jedna cívka (PosDir nebo NegDir)');
+		2: messageError('hodnot od -100 .. 0 .. 100');
+		3: messageError('enable Negativ is False');
+		4: messageError('enable Poszitive is False');
+		5: messageError('nemuže enable Pos a Neg spolu');
+	END_CASE
+status.nErrorId := ErrorId;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="messageError" Id="{30631b2c-d480-418c-b15e-5ad6737037e0}">
+      <Declaration><![CDATA[METHOD PRIVATE messageError 
+VAR_INPUT
+	sError :STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT(currentError) THEN
+	status.bError := sError;
+	blockMessage(error := sError);
+	currentError := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="rampTimeCalculate" Id="{141d03d7-0681-44d0-8863-fc4051283fe9}">
+      <Declaration><![CDATA[METHOD PRIVATE rampTimeCalculate : REAL
+VAR_INPUT
+	cMax : REAL;
+	cMin : REAL;
+	rampDirTime : INT;
+	delta : real;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[rampTimeCalculate := delta / (cMax -cMin)/ rampDirTime;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="rampTimeDown" Id="{64b1fda7-6a13-4ee0-a012-61c688c72f68}">
+      <Declaration><![CDATA[METHOD PRIVATE rampTimeDown : INT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//RampTimePosDirUp = (configaracionParammetr.CurPosDirMax - configaracionParammetr.CurPosDirMin) / (configaracionParammetr.RampPosDirUp - Deadtime);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="rampValve" Id="{efb1c5bc-55a9-4dd2-9df6-4eaae4ba8546}">
+      <Declaration><![CDATA[METHOD PRIVATE rampValve : REAL
+VAR_INPUT
+END_VAR
+VAR
+	mAcurrentCommand : REAL; 
+	mAcommand : REAL;
+	delta : REAL;
+	rateTime : REAL;
+	direction : INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[status.Standstill := FALSE;	
+IF enaNegDir THEN
+	direction := -1;
+	ELSE
+		direction := 1;
+END_IF
+mAcurrentCommand := direction * convertToAnal(currentCommand*10);
+mAcommand := direction * convertToAnal(command*10);
+
+IF (mAcurrentCommand * mAcommand) >= 0 THEN
+		// iste znak 
+		delta := ABS( mAcommand) - ABS(mAcurrentCommand) ;
+			
+		IF (delta > 0 ) THEN
+			// raste
+			Accel_Decel(TRUE , FALSE);
+			IF (enaPosDir AND command > 0) THEN
+					rateTime := rampValveDirection(delta, 1);
+				ELSIF (enaNegDir AND command <0) THEN
+						rateTime := rampValveDirection(delta, 2);
+					ELSE
+						command := 0;
+					END_IF
+			mAcurrentCommand := accelerationValve(mAcurrentCommand, mAcommand, rateTime);
+		 	
+		ELSE
+			// opada
+			Accel_Decel(FALSE , TRUE);
+			IF enaNegDir THEN
+				rateTime := rampValveDirection(delta, 3);
+			ELSE
+				rateTime := rampValveDirection(delta, 4);
+			END_IF
+			decelerationValve(mAcurrentCommand, mAcommand, rateTime);
+		END_IF
+	ELSE
+		// različiti znakovi	->	prvo opada
+		IF enaNegDir THEN
+			rateTime := rampValveDirection(delta, 3);
+		ELSE
+			rateTime := rampValveDirection(delta, 4);
+		END_IF
+		Accel_Decel(FALSE , TRUE);
+	END_IF
+	 
+	IF (mAcurrentCommand = 0) THEN
+		OutNegDir := 0;
+		OutPosDir := 0;
+		waitbDeathtime();
+		ELSIF direction > 0 THEN
+			OutPosDir := mAcurrentCommand;
+			ELSE
+				OutNegDir := mAcurrentCommand;
+		END_IF
+		
+rampValve := direction * convertTo(mAcurrentCommand)/10;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="rampValveDirection" Id="{52938cef-64ef-46fe-9bb3-0b93254c1a51}">
+      <Declaration><![CDATA[METHOD PRIVATE rampValveDirection : REAL
+VAR_INPUT
+	delta : REAL;
+	i :INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE i OF
+	1: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurPosDirMin, konfiguraParametry.RampNegDirUp ,delta);
+	2: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirUp ,delta);
+	3: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirDown ,delta);
+	4: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirDown ,delta);
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="signalbBussy" Id="{24c66bc9-cbea-473d-a7b9-0ec9e7977592}" FolderPath="status\">
+      <Declaration><![CDATA[METHOD signalbBussy : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="signalOutDirProc" Id="{cbe8e172-7050-478d-b9ce-04bc75d3051f}" FolderPath="status\">
+      <Declaration><![CDATA[METHOD signalOutDirProc 
+VAR_INPUT
+	signalOutDirProc : REAL;
+END_VAR
+VAR_OUTPUT
+	OutNegDirProc : REAL;
+	OutPosDirProc : real;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[signalOutDirProc := command;
+IF (signalOutDirProc > 0) THEN
+	OutNegDirProc := signalOutDirProc;
+	ELSE
+		OutPosDirProc := signalOutDirProc;
+	END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="signalStandstill" Id="{85d95741-4973-493f-b221-ce79aefa42c8}" FolderPath="status\">
+      <Declaration><![CDATA[METHOD PRIVATE signalStandstill : BOOL]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (OutPosDir = OutNegDir = 0) THEN
+	status.Standstill := TRUE;
+	ELSE
+		status.Standstill := FALSE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="speedRampValve" Id="{715f72a7-690c-4176-8487-a38148e045c1}">
+      <Declaration><![CDATA[METHOD PRIVATE speedRampValve 
+VAR_INPUT
+	i: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// speed Valve transition  Max to min and reverse
+CASE i OF
+	1 : speedRamp := (konfiguraParametry.CurNegDirMin)/konfiguraParametry.RampNegDirUp;
+	2 : speedRamp := (konfiguraParametry.CurNegDirMin)/konfiguraParametry.RampNegDirDown;
+	3 : speedRamp := (konfiguraParametry.CurPosDirMin)/konfiguraParametry.RampPosDirUp;
+	4 : speedRamp := (konfiguraParametry.CurPosDirMin)/konfiguraParametry.RampPosDirDown;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Standstill" Id="{0645a22c-46c8-4c4c-93ad-b7dded02cf14}" FolderPath="status\">
+      <Declaration><![CDATA[METHOD Standstill 
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF (command = 0 ) THEN
+	status.Standstill := TRUE;
+	blockMessage('Oba výstupy jsou na minimum');
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="waitbDeathtime" Id="{b79e3e4c-d012-4eb0-bcad-6964bfc150a0}">
+      <Declaration><![CDATA[METHOD waitbDeathtime : BOOL
+VAR
+	delay : TON;
+	dTime : TIME;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[dTime := INT_TO_TIME(generalVariable.conParammetr.Deadtime);
+delay(IN := TRUE, PT:= dtime);
+            IF NOT (delay.Q) THEN
+                RETURN;
+            END_IF;
+
+delay(IN := FALSE);
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
