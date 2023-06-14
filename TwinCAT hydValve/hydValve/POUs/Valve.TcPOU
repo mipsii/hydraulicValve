@@ -14,7 +14,9 @@ VAR
 	errorDir : BOOL;
 	
 	currentCommand : REAL := 0;
-		
+	
+	previousenaNegDir : BOOL; 
+	previousenaPosDir : BOOL;
 	currentError : BOOL := FALSE; // test error
 	
 	//command : INT; 
@@ -235,9 +237,10 @@ END_VAR
         <ST><![CDATA[status.Standstill := FALSE;	
 IF enaNegDir THEN
 	direction := -1;
-	ELSE
+	ELSIF enaPosDir THEN
 		direction := 1;
 END_IF
+
 mAcurrentCommand := direction * convertToAnal(currentCommand*10);
 mAcommand := direction * convertToAnal(command*10);
 
@@ -247,16 +250,18 @@ IF (mAcurrentCommand * mAcommand) >= 0 THEN
 			
 		IF (delta > 0 ) THEN
 			// raste
-			Accel_Decel(TRUE , FALSE);
-			IF (enaPosDir AND command > 0) THEN
-					rateTime := rampValveDirection(delta, 1);
-				ELSIF (enaNegDir AND command <0) THEN
-						rateTime := rampValveDirection(delta, 2);
-					ELSE
-						command := 0;
-					END_IF
-			mAcurrentCommand := accelerationValve(mAcurrentCommand, mAcommand, rateTime);
-		 	
+			//pitanje da li je dozvola uključena
+			IF (enaNegDir XOR enaPosDir) THEN
+				Accel_Decel(TRUE , FALSE);
+				IF (enaPosDir AND command > 0) THEN
+						rateTime := rampValveDirection(delta, 1);
+					ELSIF (enaNegDir AND command <0) THEN
+							rateTime := rampValveDirection(delta, 2);
+						ELSE
+							command := 0;
+						END_IF
+				mAcurrentCommand := accelerationValve(mAcurrentCommand, mAcommand, rateTime);
+				
 		ELSE
 			// opada
 			Accel_Decel(FALSE , TRUE);

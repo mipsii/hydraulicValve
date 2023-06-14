@@ -16,7 +16,7 @@
 		</System>
 		<Plc>
 			<Project GUID="{0C22695E-D7D2-41A8-AAB8-40582BAB3575}" Name="hydValve" PrjFilePath="hydValve\hydValve.plcproj" TmcFilePath="hydValve\hydValve.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="hydValve\hydValve.tmc" TmcHash="{CC9A94F2-D6D3-8CC9-576C-533E0348D7FB}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="hydValve\hydValve.tmc" TmcHash="{27F175E1-F969-0A19-0432-B515F188F001}">
 					<Name>hydValve Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Contexts>
