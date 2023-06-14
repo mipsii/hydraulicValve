@@ -18,7 +18,8 @@ END_VAR
 
 hydraulicValve.enableSolenoidControl(poz :=enaPosDirB, neg := enaNegDirB);
 hydraulicValve.commandCheck(commandSet);
-]]></ST>
+OutNegDir := hydraulicValve.OutNegDir;
+OutPosDir := hydraulicValve.OutPosDir;]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
