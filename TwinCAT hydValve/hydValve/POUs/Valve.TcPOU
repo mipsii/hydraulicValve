@@ -291,7 +291,9 @@ IF (mAcurrentCommand * mAcommand) >= 0 THEN
 			ELSE
 				OutNegDir := mAcurrentCommand;
 		END_IF
-		
+
+END_IF
+			
 rampValve := direction * convertTo(mAcurrentCommand)/10;
 ]]></ST>
       </Implementation>

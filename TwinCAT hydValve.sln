@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.1913
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{B1E792BE-AA5F-4E3C-8C82-674BF9C0715B}") = "TwinCAT hydValve", "TwinCAT hydValve\TwinCAT hydValve.tsproj", "{73C0EAC8-6A9D-45F0-B86C-21DC63FADB8A}"
 EndProject
+Project("{FD9F1D59-E000-42F3-8744-88DE1BE93C06}") = "TwinCAT Measurement valve", "TwinCAT Measurement valve\TwinCAT Measurement valve.tcmproj", "{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|TwinCAT CE7 (ARMV7) = Debug|TwinCAT CE7 (ARMV7)
@@ -49,6 +51,14 @@ Global
 		{0C22695E-D7D2-41A8-AAB8-40582BAB3575}.Release|TwinCAT RT (x64).Build.0 = Release|TwinCAT RT (x64)
 		{0C22695E-D7D2-41A8-AAB8-40582BAB3575}.Release|TwinCAT RT (x86).ActiveCfg = Release|TwinCAT RT (x86)
 		{0C22695E-D7D2-41A8-AAB8-40582BAB3575}.Release|TwinCAT RT (x86).Build.0 = Release|TwinCAT RT (x86)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Debug|TwinCAT CE7 (ARMV7).ActiveCfg = Debug|TwinCAT CE7 (ARMV7)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Debug|TwinCAT OS (ARMT2).ActiveCfg = Debug|TwinCAT OS (ARMT2)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Debug|TwinCAT RT (x64).ActiveCfg = Debug|TwinCAT RT (x64)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Debug|TwinCAT RT (x86).ActiveCfg = Debug|TwinCAT RT (x86)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Release|TwinCAT CE7 (ARMV7).ActiveCfg = Release|TwinCAT CE7 (ARMV7)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Release|TwinCAT OS (ARMT2).ActiveCfg = Release|TwinCAT OS (ARMT2)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Release|TwinCAT RT (x64).ActiveCfg = Release|TwinCAT RT (x64)
+		{C76AFBC7-E4B0-4DE8-BA55-1CCA9029BB35}.Release|TwinCAT RT (x86).ActiveCfg = Release|TwinCAT RT (x86)
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
