@@ -14,7 +14,7 @@ VAR
 	errorDir : BOOL;
 	
 	currentCommand : REAL := 0;
-	
+	prolaz : STRING;
 	previousenaNegDir : BOOL; 
 	previousenaPosDir : BOOL;
 	currentError : BOOL := FALSE; // test error
@@ -33,9 +33,10 @@ END_VAR
     <Implementation>
       <ST><![CDATA[//currentDir := currentDirB(enaNegDir,enaPosDir);
 signalStandstill();
-
+prolaz := 'fb';
 IF (currentcommand <> command) THEN
 		//nTime := elapsTime(direction := currentDir);
+		prolaz := 'različiti';
 		currentcommand := rampValve ();
 	ELSE	
 		Accel_Decel(FALSE, FALSE);
@@ -234,8 +235,10 @@ VAR
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[status.Standstill := FALSE;	
+        <ST><![CDATA[prolaz := 'UPAO u rampvalme';
+status.Standstill := FALSE;	
 IF enaNegDir THEN
+	prolaz := 'negTIVNI';
 	direction := -1;
 	ELSIF enaPosDir THEN
 		direction := 1;
@@ -244,15 +247,17 @@ END_IF
 mAcurrentCommand := direction * convertToAnal(currentCommand*10);
 mAcommand := direction * convertToAnal(command*10);
 
-IF (mAcurrentCommand * mAcommand) >= 0 THEN
+IF (currentCommand * command) >= 0 THEN
 		// iste znak 
 		delta := ABS( mAcommand) - ABS(mAcurrentCommand) ;
 			
 		IF (delta > 0 ) THEN
 			// raste
 			//pitanje da li je dozvola uključena
+			
 			IF (enaNegDir XOR enaPosDir) THEN
 				Accel_Decel(TRUE , FALSE);
+				prolaz := 'raste';
 				IF (enaPosDir AND command > 0) THEN
 						rateTime := rampValveDirection(delta, 1);
 					ELSIF (enaNegDir AND command <0) THEN
@@ -294,7 +299,7 @@ IF (mAcurrentCommand * mAcommand) >= 0 THEN
 
 END_IF
 			
-rampValve := direction * convertTo(mAcurrentCommand)/10;
+rampValve := direction * convertTo(mAcurrentCommand);
 ]]></ST>
       </Implementation>
     </Method>

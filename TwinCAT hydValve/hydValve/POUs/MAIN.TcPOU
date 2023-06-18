@@ -3,6 +3,7 @@
   <POU Name="MAIN" Id="{9244de9b-d391-42d4-9798-03c505ca3024}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	
 	hydraulicValve : Valve;
 	enaNegDirB : BOOL := FALSE;
 	enaPosDirB : BOOL := FALSE;
@@ -11,6 +12,7 @@ VAR
 	OutPosDir : REAL := 0 ;	// Výstup v daném směru [mA]
 	OutNegDir : REAL := 0 ;	// Výstup v daném směru [mA]
 END_VAR
+
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[
@@ -18,6 +20,7 @@ END_VAR
 
 hydraulicValve.enableSolenoidControl(poz :=enaPosDirB, neg := enaNegDirB);
 hydraulicValve.commandCheck(commandSet);
+hydraulicValve();
 OutNegDir := hydraulicValve.OutNegDir;
 OutPosDir := hydraulicValve.OutPosDir;]]></ST>
     </Implementation>
