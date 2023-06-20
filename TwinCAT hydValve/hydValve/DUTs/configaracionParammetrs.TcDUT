@@ -7,9 +7,9 @@ STRUCT
 	CurPosDirMax : REAL := 500; // Maximální proud na solenoid v daném směru [mA]
 	CurNegDirMin : REAL := 100; // Minimální proud na solenoid v daném směru [mA]
 	CurNegDirMax : REAL := 500; // Maximální proud na solenoid v daném směru [mA]
-	RampPosDirUp : INT := 10; // Doba změny z min. na max. otevření v daném směru [ms]
-	RampPosDirDown :INT := 10; // Doba změny z max. na min. otevření v daném směru [ms]
-	RampNegDirUp : INT := 10; // Doba změny z min. na max. otevření v daném směru [ms]
+	RampPosDirUp : INT := 100; // Doba změny z min. na max. otevření v daném směru [ms]
+	RampPosDirDown :INT := 100; // Doba změny z max. na min. otevření v daném směru [ms]
+	RampNegDirUp : INT := 100; // Doba změny z min. na max. otevření v daném směru [ms]
 	RampNegDirDown : INT := 10; // Doba změny z max. na min. otevření v daném směru [ms]
 	Deadtime : INT := 5; // Kompenzace setrvačnosti při reverzaci [ms]
 

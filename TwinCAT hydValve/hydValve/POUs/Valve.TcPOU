@@ -127,9 +127,9 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[IF  enaPosDir THEN
-	convertToAnal:= (konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin)/1000*pCommand + konfiguraParametry.CurPosDirMin;
+	convertToAnal:= (pCommand * (konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin)/1000) + konfiguraParametry.CurPosDirMin;
 ELSE
-	convertToAnal:= (konfiguraParametry.CurNegDirMax - konfiguraParametry.CurNegDirMin)/1000*pCommand + konfiguraParametry.CurNegDirMin;
+	convertToAnal:= (pCommand * (konfiguraParametry.CurNegDirMax - konfiguraParametry.CurNegDirMin)/1000) + konfiguraParametry.CurNegDirMin;
 END_IF
 ]]></ST>
       </Implementation>
@@ -241,6 +241,7 @@ IF enaNegDir THEN
 	prolaz := 'negTIVNI';
 	direction := -1;
 	ELSIF enaPosDir THEN
+		prolaz := 'pozitivni';
 		direction := 1;
 END_IF
 
@@ -249,10 +250,12 @@ mAcommand := direction * convertToAnal(command*10);
 
 IF (currentCommand * command) >= 0 THEN
 		// iste znak 
-		delta := ABS( mAcommand) - ABS(mAcurrentCommand) ;
+		prolaz := 'isti znak';
+		delta :=  ABS(command) - ABS(currentCommand);
 			
 		IF (delta > 0 ) THEN
 			// raste
+			prolaz := 'delata veći od 0 ';
 			//pitanje da li je dozvola uključena
 			
 			IF (enaNegDir XOR enaPosDir) THEN
@@ -269,13 +272,14 @@ IF (currentCommand * command) >= 0 THEN
 				
 		ELSE
 			// opada
+			prolaz := 'opada';
 			Accel_Decel(FALSE , TRUE);
 			IF enaNegDir THEN
 				rateTime := rampValveDirection(delta, 3);
 			ELSE
 				rateTime := rampValveDirection(delta, 4);
 			END_IF
-			decelerationValve(mAcurrentCommand, mAcommand, rateTime);
+			mAcurrentCommand := decelerationValve(mAcurrentCommand, mAcommand, rateTime);
 		END_IF
 	ELSE
 		// različiti znakovi	->	prvo opada
@@ -285,13 +289,14 @@ IF (currentCommand * command) >= 0 THEN
 			rateTime := rampValveDirection(delta, 4);
 		END_IF
 		Accel_Decel(FALSE , TRUE);
+		mAcurrentCommand := decelerationValve(mAcurrentCommand, mAcommand, rateTime);
 	END_IF
 	 
 	IF (mAcurrentCommand = 0) THEN
 		OutNegDir := 0;
 		OutPosDir := 0;
 		waitbDeathtime();
-		ELSIF direction > 0 THEN
+		ELSIF enaPosDir > 0 THEN
 			OutPosDir := mAcurrentCommand;
 			ELSE
 				OutNegDir := mAcurrentCommand;

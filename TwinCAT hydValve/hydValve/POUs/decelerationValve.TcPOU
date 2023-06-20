@@ -10,22 +10,23 @@ END_VAR
 VAR
 	delta : REAL;
 	time_increment : REAL;
-	temp :real;
+	fbGetCurTaskIdx  : GETCURTASKINDEX;
+     nCycleTime       : UDINT;
 END_VAR
 
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[delta := ABS( iCurrent) - ABS(iTarget) ;
+      <ST><![CDATA[delta :=  iTarget - iCurrent ;
 
-time_increment := iTime/delta ;
+time_increment := ABS(delta/iTime) ;
+fbGetCurTaskIdx();
+nCycleTime := _TaskInfo[fbGetCurTaskIdx.index].CycleTime;
  
-temp :=iCurrent - time_increment;
-
-IF ( temp < iTarget) THEN
-	temp := iTarget;
-END_IF 
- 
-decelerationValve :=temp ; ]]></ST>
+iCurrent := iCurrent - time_increment * nCycleTime;  
+IF (iCurrent <= iTarget) THEN
+	iCurrent := iTarget;
+END_IF
+decelerationValve :=iCurrent ; ]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
