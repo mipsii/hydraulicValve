@@ -98,6 +98,7 @@ END_VAR
 				END_IF
 				ELSIF comm = 0 THEN
 						status.Standstill := 0;
+						addCommand(comm);
 					ELSIF NOT(errorDir) THEN
 					errCode(2);
 					errorDir := TRUE;
@@ -113,9 +114,9 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[IF enaPosDir THEN
-	convertTo := 1000*(currCommand -konfiguraParametry.CurPosDirMin)/(konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin);
+	convertTo := 100*(currCommand -konfiguraParametry.CurPosDirMin)/(konfiguraParametry.CurPosDirMax - konfiguraParametry.CurPosDirMin);
 ELSE
-	convertTo := 1000*(currCommand -konfiguraParametry.CurNegDirMin)/(konfiguraParametry.CurnegDirMax - konfiguraParametry.CurNegDirMin);
+	convertTo := 100*(currCommand -konfiguraParametry.CurNegDirMin)/(konfiguraParametry.CurnegDirMax - konfiguraParametry.CurNegDirMin);
 END_IF]]></ST>
       </Implementation>
     </Method>
@@ -209,7 +210,7 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[rampTimeCalculate := delta / (cMax -cMin)/ rampDirTime;]]></ST>
+        <ST><![CDATA[rampTimeCalculate := abs(delta / (cMax -cMin)/ rampDirTime);]]></ST>
       </Implementation>
     </Method>
     <Method Name="rampTimeDown" Id="{64b1fda7-6a13-4ee0-a012-61c688c72f68}">
@@ -244,15 +245,14 @@ IF enaNegDir THEN
 		prolaz := 'pozitivni';
 		direction := 1;
 END_IF
-
+delta :=  ABS(command) - ABS(currentCommand);
 mAcurrentCommand := direction * convertToAnal(currentCommand*10);
 mAcommand := direction * convertToAnal(command*10);
 
 IF (currentCommand * command) >= 0 THEN
 		// iste znak 
 		prolaz := 'isti znak';
-		delta :=  ABS(command) - ABS(currentCommand);
-			
+					
 		IF (delta > 0 ) THEN
 			// raste
 			prolaz := 'delata veći od 0 ';
@@ -267,30 +267,30 @@ IF (currentCommand * command) >= 0 THEN
 							rateTime := rampValveDirection(delta, 2);
 						ELSE
 							command := 0;
-						END_IF
+				END_IF;
+			END_IF;
 				mAcurrentCommand := accelerationValve(mAcurrentCommand, mAcommand, rateTime);
-				
 		ELSE
 			// opada
 			prolaz := 'opada';
 			Accel_Decel(FALSE , TRUE);
 			IF enaNegDir THEN
 				rateTime := rampValveDirection(delta, 3);
-			ELSE
+				ELSE
 				rateTime := rampValveDirection(delta, 4);
-			END_IF
+			END_IF;
 			mAcurrentCommand := decelerationValve(mAcurrentCommand, mAcommand, rateTime);
-		END_IF
-	ELSE
+		END_IF;
+ELSE
 		// različiti znakovi	->	prvo opada
 		IF enaNegDir THEN
 			rateTime := rampValveDirection(delta, 3);
 		ELSE
 			rateTime := rampValveDirection(delta, 4);
-		END_IF
+		END_IF;
 		Accel_Decel(FALSE , TRUE);
-		mAcurrentCommand := decelerationValve(mAcurrentCommand, mAcommand, rateTime);
-	END_IF
+		mAcurrentCommand := decelerationValve(mAcurrentCommand, 0, rateTime);
+END_IF;
 	 
 	IF (mAcurrentCommand = 0) THEN
 		OutNegDir := 0;
@@ -298,11 +298,11 @@ IF (currentCommand * command) >= 0 THEN
 		waitbDeathtime();
 		ELSIF enaPosDir > 0 THEN
 			OutPosDir := mAcurrentCommand;
+			OutNegDir := 0;
 			ELSE
 				OutNegDir := mAcurrentCommand;
-		END_IF
-
-END_IF
+				OutPosDir := 0;
+		END_IF;
 			
 rampValve := direction * convertTo(mAcurrentCommand);
 ]]></ST>
@@ -316,10 +316,14 @@ VAR_INPUT
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE i OF
-	1: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurPosDirMin, konfiguraParametry.RampNegDirUp ,delta);
-	2: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirUp ,delta);
-	3: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirDown ,delta);
-	4: rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirDown ,delta);
+	1:	//Pos  addd
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurPosDirMin, konfiguraParametry.RampNegDirUp ,delta);
+	2: 	//Neg add
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirUp ,delta);
+	3: 	//pos dec
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMin, konfiguraParametry.CurPosDirMax, konfiguraParametry.RampNegDirDown ,delta);
+	4: 	//neg dec
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMin, konfiguraParametry.CurNegDirMax, konfiguraParametry.RampNegDirDown ,delta);
 END_CASE]]></ST>
       </Implementation>
     </Method>

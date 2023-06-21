@@ -26,7 +26,7 @@ iCurrent := iCurrent - time_increment * nCycleTime;
 IF (iCurrent <= iTarget) THEN
 	iCurrent := iTarget;
 END_IF
-decelerationValve :=iCurrent ; ]]></ST>
+decelerationValve := iCurrent ; ]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
