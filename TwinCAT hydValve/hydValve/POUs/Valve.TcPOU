@@ -23,7 +23,8 @@ VAR
 	status : REFERENCE TO Staus REF=generalVariable.staus;
 	konfiguraParametry : REFERENCE TO configaracionParammetrs  REF=generalVariable.conParammetr;
 	speedRamp : REAL;
-	
+	mAcurrentCommand : REAL; 
+	mAcommand : REAL;
 END_VAR
 VAR_OUTPUT
 	OutPosDir : REAL := 0 ;	// Výstup v daném směru [mA]
@@ -32,6 +33,21 @@ END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[//currentDir := currentDirB(enaNegDir,enaPosDir);
+mAcurrentCommand := convertToAnal(ABS(currentCommand*10));
+mAcommand :=  convertToAnal(ABS(command*10));
+
+IF (currentCommand = 0) THEN
+	OutNegDir := mAcurrentCommand;
+	OutPosDir := mAcurrentCommand;
+	waitbDeathtime();
+	ELSIF enaPosDir > 0 THEN
+		OutPosDir := mAcurrentCommand;
+		OutNegDir := convertToAnal(0);
+		ELSE
+			OutNegDir := mAcurrentCommand;
+			OutPosDir := convertToAnal(0);
+	END_IF;
+
 signalStandstill();
 prolaz := 'fb';
 IF (currentcommand <> command) THEN
@@ -210,7 +226,7 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[rampTimeCalculate := abs(delta / (cMax -cMin)/ rampDirTime);]]></ST>
+        <ST><![CDATA[rampTimeCalculate := abs((delta * rampDirTime) / (cMax -cMin));]]></ST>
       </Implementation>
     </Method>
     <Method Name="rampTimeDown" Id="{64b1fda7-6a13-4ee0-a012-61c688c72f68}">
@@ -228,8 +244,7 @@ END_VAR
 VAR_INPUT
 END_VAR
 VAR
-	mAcurrentCommand : REAL; 
-	mAcommand : REAL;
+	
 	delta : REAL;
 	rateTime : REAL;
 	direction : INT;
@@ -245,9 +260,7 @@ IF enaNegDir THEN
 		prolaz := 'pozitivni';
 		direction := 1;
 END_IF
-delta :=  ABS(command) - ABS(currentCommand);
-mAcurrentCommand := direction * convertToAnal(currentCommand*10);
-mAcommand := direction * convertToAnal(command*10);
+delta :=  mAcommand - mAcurrentCommand;
 
 IF (currentCommand * command) >= 0 THEN
 		// iste znak 
@@ -292,17 +305,7 @@ ELSE
 		mAcurrentCommand := decelerationValve(mAcurrentCommand, 0, rateTime);
 END_IF;
 	 
-	IF (mAcurrentCommand = 0) THEN
-		OutNegDir := 0;
-		OutPosDir := 0;
-		waitbDeathtime();
-		ELSIF enaPosDir > 0 THEN
-			OutPosDir := mAcurrentCommand;
-			OutNegDir := 0;
-			ELSE
-				OutNegDir := mAcurrentCommand;
-				OutPosDir := 0;
-		END_IF;
+delta := convertTo(mAcurrentCommand);
 			
 rampValve := direction * convertTo(mAcurrentCommand);
 ]]></ST>
@@ -317,11 +320,11 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE i OF
 	1:	//Pos  addd
-		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurPosDirMin, konfiguraParametry.RampNegDirUp ,delta);
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMax, konfiguraParametry.CurPosDirMin, konfiguraParametry.RampPosDirDown ,delta);
 	2: 	//Neg add
 		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMax, konfiguraParametry.CurNegDirMin, konfiguraParametry.RampNegDirUp ,delta);
 	3: 	//pos dec
-		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMin, konfiguraParametry.CurPosDirMax, konfiguraParametry.RampNegDirDown ,delta);
+		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurPosDirMin, konfiguraParametry.CurPosDirMax, konfiguraParametry.RampPosDirDown ,delta);
 	4: 	//neg dec
 		rampValveDirection := rampTimeCalculate(konfiguraParametry.CurNegDirMin, konfiguraParametry.CurNegDirMax, konfiguraParametry.RampNegDirDown ,delta);
 END_CASE]]></ST>

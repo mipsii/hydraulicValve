@@ -17,7 +17,7 @@ END_VAR
     <Implementation>
       <ST><![CDATA[delta :=  iTarget - iCurrent;
 
-time_increment :=ABS( delta/iTime) ;
+time_increment := ABS(delta/iTime) ;
 fbGetCurTaskIdx();
 nCycleTime := _TaskInfo[fbGetCurTaskIdx.index].CycleTime;
  
